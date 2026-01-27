@@ -1,0 +1,67 @@
+name: Ubuntu Build
+
+on:
+  workflow_call:
+    inputs:
+      ring-version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ matrix.arch == 'amd64' && 'ubuntu-latest' || 'ubuntu-24.04-arm' }}
+    strategy:
+      matrix:
+        include:
+        - arch: amd64
+        - arch: arm64
+
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential python3-dev
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Clone Ring Language
+      uses: actions/checkout@v4
+      with:
+        repository: ringpackages/ringsrc
+        path: ring
+        ref: ${{ inputs.ring-version }}
+
+    - name: Build and Install Ring Language
+      run: |
+        cd ring/language
+        cmake . -DCMAKE_BUILD_TYPE=Release
+        make install
+
+    - name: Set RING environment variable
+      run: echo "RING=$(pwd)/ring" >> $GITHUB_ENV
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: "src/rust_src -> target"
+
+    - name: Build ring_python Rust library
+      run: cargo build --release
+      working-directory: src/rust_src
+
+    - name: Copy Rust artifacts to lib directory
+      run: |
+        mkdir -p lib/linux/${{ matrix.arch }}
+        cp src/rust_src/target/release/libring_python.so lib/linux/${{ matrix.arch }}/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ring-python-linux-${{ matrix.arch }}
+        path: lib/linux/${{ matrix.arch }}/libring_python.so
