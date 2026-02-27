@@ -59,10 +59,10 @@ jobs:
     - name: Copy Rust artifacts to lib directory
       run: |
         mkdir -p lib/macos/${{ matrix.arch }}
-        cp src/rust_src/target/${{ matrix.rust_target }}/release/libring_python.dylib lib/macos/${{ matrix.arch }}/
+        cp src/rust_src/target/${{ matrix.rust_target }}/release/libring_python.dylib src/rust_src/target/${{ matrix.rust_target }}/release/libring_python_impl.dylib lib/macos/${{ matrix.arch }}/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ring-python-macos-${{ matrix.arch }}
-        path: lib/macos/${{ matrix.arch }}/libring_python.dylib
+        path: lib/macos/${{ matrix.arch }}/

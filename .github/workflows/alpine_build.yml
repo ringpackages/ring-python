@@ -61,10 +61,10 @@ jobs:
     - name: Copy Rust artifacts to lib directory
       run: |
         mkdir -p lib/linux/musl/${{ matrix.arch }}
-        cp src/rust_src/target/release/libring_python.so lib/linux/musl/${{ matrix.arch }}/
+        cp src/rust_src/target/release/libring_python.so src/rust_src/target/release/libring_python_impl.so lib/linux/musl/${{ matrix.arch }}/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ring-python-linux-musl-${{ matrix.arch }}
-        path: lib/linux/musl/${{ matrix.arch }}/libring_python.so
+        path: lib/linux/musl/${{ matrix.arch }}/

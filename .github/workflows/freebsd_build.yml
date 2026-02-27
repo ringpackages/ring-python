@@ -64,10 +64,10 @@ jobs:
 
           # Copy artifacts
           mkdir -p lib/freebsd/${{ matrix.arch }}
-          cp src/rust_src/target/release/libring_python.so lib/freebsd/${{ matrix.arch }}/
+          cp src/rust_src/target/release/libring_python.so src/rust_src/target/release/libring_python_impl.so lib/freebsd/${{ matrix.arch }}/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ring-python-freebsd-${{ matrix.arch }}
-        path: lib/freebsd/${{ matrix.arch }}/libring_python.so
+        path: lib/freebsd/${{ matrix.arch }}/

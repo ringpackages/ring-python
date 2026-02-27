@@ -71,10 +71,10 @@ jobs:
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path lib/windows/${{ matrix.arch_name }}
-        Copy-Item src/rust_src/target/${{ matrix.rust_target }}/release/ring_python.dll lib/windows/${{ matrix.arch_name }}/
+        Copy-Item src/rust_src/target/${{ matrix.rust_target }}/release/ring_python.dll, src/rust_src/target/${{ matrix.rust_target }}/release/ring_python_impl.dll lib/windows/${{ matrix.arch_name }}/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ring-python-windows-${{ matrix.arch_name }}
-        path: lib/windows/${{ matrix.arch_name }}/ring_python.dll
+        path: lib/windows/${{ matrix.arch_name }}/
