@@ -16,6 +16,7 @@ C_PRETTY_NAME      = "Ring Python"
 C_PACKAGE_NAME     = "ring-python"
 C_NEW_PACKAGE_NAME = "python"
 C_LIB_NAME         = "ring_" + C_NEW_PACKAGE_NAME
+C_IMPL_LIB_NAME    = "ring_" + C_NEW_PACKAGE_NAME + "_impl"
 C_SAMPLES_DIR      = "Using" + capitalized(C_NEW_PACKAGE_NAME)
 
 # ============================================================================
@@ -126,43 +127,48 @@ class Uninstaller
 
 	func removeLibraryFiles
 		printStep("Removing library files…")
-		cLibFileName = cLibPrefix + C_LIB_NAME + cLibExt
+		aLibFileNames = [
+			cLibPrefix + C_LIB_NAME + cLibExt,
+			cLibPrefix + C_IMPL_LIB_NAME + cLibExt
+		]
 		lAnyRemoved = false
 		
-		# Remove from Ring lib directory
-		cRingLibPath = buildPath([exefolder(), "..", "lib", cLibFileName])
-		if fexists(cRingLibPath)
-			remove(cRingLibPath)
-			printSubStep("Removed from Ring lib directory")
-			lAnyRemoved = true
-		ok
-		
-		# Remove from Ring bin directory (Windows)
-		if isWindows()
-			cBinPath = buildPath([exefolder(), cLibFileName])
-			if fexists(cBinPath)
-				remove(cBinPath)
-				printSubStep("Removed from Ring bin directory")
+		for cLibFileName in aLibFileNames
+			# Remove from Ring lib directory
+			cRingLibPath = buildPath([exefolder(), "..", "lib", cLibFileName])
+			if fexists(cRingLibPath)
+				remove(cRingLibPath)
+				printSubStep("Removed " + cLibFileName + " from Ring lib directory")
 				lAnyRemoved = true
-			ok
-		ok
-		
-		# Remove symlinks from system directories (Unix)
-		if not isWindows()
-			if isFreeBSD() or isMacOSX()
-				cSystemLibDir = "/usr/local/lib"
-			else
-				cSystemLibDir = "/usr/lib"
 			ok
 			
-			cSystemLibPath = cSystemLibDir + "/" + cLibFileName
-			if fexists(cSystemLibPath)
-				cRemoveCmd = 'rm -f "' + cSystemLibPath + '"'
-				system(buildElevatedCommand(cRemoveCmd))
-				printSubStep("Removed from " + cSystemLibDir)
-				lAnyRemoved = true
+			# Remove from Ring bin directory (Windows)
+			if isWindows()
+				cBinPath = buildPath([exefolder(), cLibFileName])
+				if fexists(cBinPath)
+					remove(cBinPath)
+					printSubStep("Removed " + cLibFileName + " from Ring bin directory")
+					lAnyRemoved = true
+				ok
 			ok
-		ok
+			
+			# Remove symlinks from system directories (Unix)
+			if not isWindows()
+				if isFreeBSD() or isMacOSX()
+					cSystemLibDir = "/usr/local/lib"
+				else
+					cSystemLibDir = "/usr/lib"
+				ok
+				
+				cSystemLibPath = cSystemLibDir + "/" + cLibFileName
+				if fexists(cSystemLibPath)
+					cRemoveCmd = 'rm -f "' + cSystemLibPath + '"'
+					system(buildElevatedCommand(cRemoveCmd))
+					printSubStep("Removed " + cLibFileName + " from " + cSystemLibDir)
+					lAnyRemoved = true
+				ok
+			ok
+		next
 		
 		if lAnyRemoved
 			printSuccess("Library files removed")

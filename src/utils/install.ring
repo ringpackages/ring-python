@@ -17,6 +17,7 @@ C_PRETTY_NAME      = "Ring Python"
 C_PACKAGE_NAME     = "ring-python"
 C_NEW_PACKAGE_NAME = "python"
 C_LIB_NAME         = "ring_" + C_NEW_PACKAGE_NAME
+C_IMPL_LIB_NAME    = "ring_" + C_NEW_PACKAGE_NAME + "_impl"
 C_SAMPLES_DIR      = "Using" + capitalized(C_NEW_PACKAGE_NAME)
 
 # ============================================================================
@@ -43,6 +44,7 @@ class Installer
 	# Paths
 	cPackagePath  = ""
 	cLibPath      = ""
+	cImplLibPath  = ""
 	cSamplesPath  = ""
 	cExamplesPath = ""
 
@@ -127,10 +129,18 @@ class Installer
 				cPackagePath, "lib", cOSName, "musl", cArchName,
 				cLibPrefix + C_LIB_NAME + cLibExt
 			])
+			cImplLibPath = buildPath([
+				cPackagePath, "lib", cOSName, "musl", cArchName,
+				cLibPrefix + C_IMPL_LIB_NAME + cLibExt
+			])
 		else
 			cLibPath = buildPath([
 				cPackagePath, "lib", cOSName, cArchName,
 				cLibPrefix + C_LIB_NAME + cLibExt
+			])
+			cImplLibPath = buildPath([
+				cPackagePath, "lib", cOSName, cArchName,
+				cLibPrefix + C_IMPL_LIB_NAME + cLibExt
 			])
 		ok
 
@@ -192,6 +202,9 @@ class Installer
 
 	func installWindowsLibrary
 		systemSilent('copy /y "' + cLibPath + '" "' + exefolder() + '"')
+		if fexists(cImplLibPath)
+			systemSilent('copy /y "' + cImplLibPath + '" "' + exefolder() + '"')
+		ok
 
 	func installUnixLibrary
 		cRingLibDir = buildPath([exefolder(), "..", "lib"])
@@ -203,12 +216,17 @@ class Installer
 			cSystemLibDir = "/usr/lib"
 		ok
 
-		# Symlink to Ring lib directory
+		# Symlink loader to Ring lib directory and system lib directory
 		system('ln -sf "' + cLibPath + '" "' + cRingLibDir + '"')
-
-		# Symlink to system lib directory (with privilege escalation fallback)
 		cLinkCmd = 'ln -sf "' + cLibPath + '" "' + cSystemLibDir + '"'
 		system(buildElevatedCommand(cLinkCmd))
+
+		# Symlink impl library alongside loader
+		if fexists(cImplLibPath)
+			system('ln -sf "' + cImplLibPath + '" "' + cRingLibDir + '"')
+			cImplLinkCmd = 'ln -sf "' + cImplLibPath + '" "' + cSystemLibDir + '"'
+			system(buildElevatedCommand(cImplLinkCmd))
+		ok
 
 	func buildElevatedCommand baseCmd
 		return 'which sudo >/dev/null 2>&1 && sudo ' + baseCmd +
@@ -272,10 +290,10 @@ class Installer
 		return 'aLibrary = [
 	:name         = :' + C_NEW_PACKAGE_NAME + ',
 	:title        = "' + C_PRETTY_NAME + '",
-	:windowsfiles = ["' + C_LIB_NAME + '.dll"],
-	:linuxfiles   = ["lib' + C_LIB_NAME + '.so"],
-	:macosxfiles  = ["lib' + C_LIB_NAME + '.dylib"],
-	:freebsdfiles = ["lib' + C_LIB_NAME + '.so"],
+	:windowsfiles = ["' + C_LIB_NAME + '.dll", "' + C_IMPL_LIB_NAME + '.dll"],
+	:linuxfiles   = ["lib' + C_LIB_NAME + '.so", "lib' + C_IMPL_LIB_NAME + '.so"],
+	:macosxfiles  = ["lib' + C_LIB_NAME + '.dylib", "lib' + C_IMPL_LIB_NAME + '.dylib"],
+	:freebsdfiles = ["lib' + C_LIB_NAME + '.so", "lib' + C_IMPL_LIB_NAME + '.so"],
 	:ubuntudep    = "",
 	:fedoradep    = "",
 	:macosxdep    = ""
