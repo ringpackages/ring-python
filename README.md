@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="img/logo.png" width="200" height="200" alt="Ring Python Logo" />
+
 # Ring Python
 
 Use Python from your Ring applications.
