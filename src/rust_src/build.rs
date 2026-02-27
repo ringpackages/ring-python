@@ -3,9 +3,18 @@ use std::path::PathBuf;
 
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let target_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap())
-        .join("target")
-        .join(env::var("PROFILE").unwrap_or("release".into()));
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let profile = env::var("PROFILE").unwrap_or("release".into());
+    let target = env::var("TARGET").unwrap_or_default();
+
+    // Cargo puts output in target/<profile>/ OR target/<triple>/<profile>/
+    // when --target is used. Output loader to both locations to be safe.
+    let base_dir = manifest_dir.join("target").join(&profile);
+    let triple_dir = if !target.is_empty() {
+        Some(manifest_dir.join("target").join(&target).join(&profile))
+    } else {
+        None
+    };
 
     // Compile the loader .so
     // This tiny C library:
@@ -17,23 +26,26 @@ fn main() {
     std::fs::write(&loader_c, LOADER_SOURCE).unwrap();
 
     // Platform-specific loader compilation
-    let target = env::var("TARGET").unwrap_or_default();
     let is_windows = target.contains("windows");
     let is_macos = target.contains("apple") || target.contains("darwin");
+
+    std::fs::create_dir_all(&base_dir).ok();
+    if let Some(ref td) = triple_dir {
+        std::fs::create_dir_all(td).ok();
+    }
 
     if is_windows {
         // On Windows, the loader is compiled by the C compiler from the host
         // For cross-compilation from Linux CI, we skip loader compilation
         // and rely on the Rust cdylib being named ring_python_impl.dll
         // The loader .dll is built separately or by MSVC on Windows CI
-        let loader_dll = target_dir.join("ring_python.dll");
+        let loader_dll = base_dir.join("ring_python.dll");
         let status = std::process::Command::new("cl.exe")
             .args([
-                "/LD", "/O2", "/Fe:", loader_dll.to_str().unwrap(),
+                "/LD", "/O2", &format!("/Fe:{}", loader_dll.to_str().unwrap()),
                 loader_c.to_str().unwrap(),
             ])
             .status();
-        // If cl.exe is not available (Linux CI), try gcc for Windows target
         if status.is_err() || !status.unwrap().success() {
             let status = std::process::Command::new("gcc")
                 .args([
@@ -45,8 +57,11 @@ fn main() {
                 .expect("Failed to compile loader");
             assert!(status.success(), "Failed to compile loader .dll");
         }
+        if let Some(ref td) = triple_dir {
+            std::fs::copy(&loader_dll, td.join("ring_python.dll")).ok();
+        }
     } else if is_macos {
-        let loader_dylib = target_dir.join("libring_python.dylib");
+        let loader_dylib = base_dir.join("libring_python.dylib");
         let status = std::process::Command::new("gcc")
             .args([
                 "-shared", "-fPIC", "-O2",
@@ -58,9 +73,13 @@ fn main() {
             .status()
             .expect("Failed to compile loader");
         assert!(status.success(), "Failed to compile loader .dylib");
+        if let Some(ref td) = triple_dir {
+            std::fs::copy(&loader_dylib, td.join("libring_python.dylib")).ok();
+        }
     } else {
         // Linux, FreeBSD, etc.
-        let loader_so = target_dir.join("libring_python.so");
+        let loader_so = base_dir.join("libring_python.so");
+        std::fs::create_dir_all(&base_dir).ok();
         let status = std::process::Command::new("gcc")
             .args([
                 "-shared", "-fPIC", "-O2",
@@ -72,9 +91,19 @@ fn main() {
             .status()
             .expect("Failed to compile loader");
         assert!(status.success(), "Failed to compile loader .so");
+        if let Some(ref td) = triple_dir {
+            std::fs::create_dir_all(td).ok();
+            std::fs::copy(&loader_so, td.join("libring_python.so")).ok();
+        }
     }
 
     println!("cargo:rerun-if-changed=build.rs");
+
+    // On macOS, allow undefined symbols (resolved at runtime by the loader)
+    if is_macos {
+        println!("cargo:rustc-cdylib-link-arg=-undefined");
+        println!("cargo:rustc-cdylib-link-arg=dynamic_lookup");
+    }
 }
 
 const LOADER_SOURCE: &str = r#"
