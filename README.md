@@ -164,31 +164,137 @@ For more examples, see the [`examples/`](examples/) directory.
 
 ### Low-Level Functions
 
-| Category | Functions |
-|----------|-----------|
-| **Core** | `py_init()`, `py_version()`, `py_exec()`, `py_eval()` |
-| **Variables** | `py_set()`, `py_get()` |
-| **Modules** | `py_import()` |
-| **Calls** | `py_call()`, `py_call_method()` |
-| **Objects** | `py_object()`, `py_value()`, `py_getattr()`, `py_hasattr()` |
-| **Type Info** | `py_type()`, `py_isinstance()`, `py_repr()`, `py_str()`, `py_len()`, `py_dir()` |
-| **Constants** | `py_none()`, `py_true()`, `py_false()` |
-| **Containers** | `py_list()`, `py_dict()`, `py_tuple()` |
+#### Core
+
+| Function | Description |
+|----------|-------------|
+| `py_init()` | Initializes the Python interpreter. Returns `1` on success. |
+| `py_version()` | Returns the Python version string. |
+| `py_exec(code)` | Executes Python code. Returns `1` on success. |
+| `py_eval(expr)` | Evaluates a Python expression and returns the result. |
+
+#### Variables
+
+| Function | Description |
+|----------|-------------|
+| `py_set(name, value)` | Sets a variable in the Python global namespace. |
+| `py_get(name)` | Gets a variable from the Python global namespace. |
+
+#### Modules & Calls
+
+| Function | Description |
+|----------|-------------|
+| `py_import(module)` | Imports a Python module. Returns a pointer. |
+| `py_call(func, [args], [kwargs])` | Calls a Python function by name. `args` is a list, `kwargs` is a list of `[key, value]` pairs. |
+| `py_call_method(obj, method, [args], [kwargs])` | Calls a method on a Python object. |
+
+#### Objects & Type Info
+
+| Function | Description |
+|----------|-------------|
+| `py_object(value)` | Converts a Ring value to a Python object pointer. |
+| `py_value(obj)` | Converts a Python object back to a Ring value. |
+| `py_getattr(obj, name)` | Gets an attribute from a Python object. |
+| `py_hasattr(obj, name)` | Returns `1` if the attribute exists, `0` otherwise. |
+| `py_type(obj)` | Returns the type name (e.g., `"int"`, `"str"`, `"list"`). |
+| `py_isinstance(obj, type)` | Returns `1` if the object is an instance of the given type. |
+| `py_repr(obj)` | Returns the `repr()` string. |
+| `py_str(obj)` | Returns the `str()` string. |
+| `py_len(obj)` | Returns the length of the object. |
+| `py_dir(obj)` | Returns a list of the object's attributes and methods. |
+
+#### Constants & Containers
+
+| Function | Description |
+|----------|-------------|
+| `py_none()` | Returns a Python `None` object. |
+| `py_true()` | Returns a Python `True` object. |
+| `py_false()` | Returns a Python `False` object. |
+| `py_list(items)` | Creates a Python list from a Ring list. |
+| `py_dict(pairs)` | Creates a Python dict from a Ring list of `[key, value]` pairs. |
+| `py_tuple(items)` | Creates a Python tuple from a Ring list. |
 
 ### Ring Classes
 
-| Class | Description |
-|-------|-------------|
-| **Python** | Main class — `exec()`, `eval()`, `importModule()`, `callFunc()`, `callFuncArgs()`, `callFuncKwargs()`, `set()`, `getVar()`, `version()` |
-| **PyObject** | Base wrapper — `getattr()`, `hasattr()`, `callMethod()`, `callMethodArgs()`, `callMethodKwargs()`, `isinstance()`, `type()`, `repr()`, `str()`, `len()`, `dir()`, `value()` |
-| **PyModule** | Import wrapper — `init(name)` loads a Python module |
-| **PyNone** | Python `None` |
-| **PyBool** | Python `True`/`False` |
-| **PyList** | Python list from Ring list |
-| **PyDict** | Python dict from Ring key-value pairs |
-| **PyTuple** | Python tuple from Ring list |
-| **PyValue** | Convert any Ring value to Python object |
+#### Python
 
+Main class for interacting with the Python interpreter.
+
+```ring
+py = new Python()
+```
+
+| Method | Description |
+|--------|-------------|
+| `exec(code)` | Executes Python code. Returns `1` on success. |
+| `eval(expr)` | Evaluates an expression. Returns the result. |
+| `importModule(name)` | Imports a module. Returns a pointer. |
+| `callFunc(func)` | Calls a Python function with no arguments. |
+| `callFuncArgs(func, args)` | Calls with positional arguments. |
+| `callFuncKwargs(func, args, kwargs)` | Calls with positional and keyword arguments. |
+| `set(name, value)` | Sets a Python variable. |
+| `getVar(name)` | Gets a Python variable. |
+| `version()` | Returns the Python version string. |
+
+#### PyObject
+
+Base wrapper for any Python object. All other `Py*` classes inherit from this.
+
+```ring
+obj = new PyObject(py_object("hello"))
+```
+
+| Method | Description |
+|--------|-------------|
+| `getattr(name)` | Gets an attribute value. |
+| `hasattr(name)` | Returns `1` if attribute exists. |
+| `callMethod(name)` | Calls a method with no arguments. |
+| `callMethodArgs(name, args)` | Calls with positional arguments. |
+| `callMethodKwargs(name, args, kwargs)` | Calls with positional and keyword arguments. |
+| `isinstance(type)` | Checks type. Returns `1` or `0`. |
+| `type()` | Returns the type name string. |
+| `repr()` | Returns the `repr()` string. |
+| `str()` | Returns the `str()` string. |
+| `len()` | Returns the object length. |
+| `dir()` | Returns a list of attributes/methods. |
+| `value()` | Converts back to a Ring value. |
+
+#### PyModule
+
+Imports a Python module. Inherits all methods from `PyObject`.
+
+```ring
+math = new PyModule("math")
+? math.getattr("pi")    # 3.14159...
+```
+
+#### PyNone / PyBool
+
+```ring
+none = new PyNone()         # Python None
+t = new PyBool(true)        # Python True
+f = new PyBool(false)       # Python False
+```
+
+#### PyList / PyDict / PyTuple
+
+Create Python containers from Ring values. Inherit all methods from `PyObject`.
+
+```ring
+lst = new PyList([1, 2, 3])
+dct = new PyDict([["name", "Ring"], ["year", 2016]])
+tpl = new PyTuple([1, 2, 3])
+```
+
+#### PyValue
+
+Converts any Ring value to a Python object.
+
+```ring
+v = new PyValue(42)
+? v.type()     # int
+? v.value()    # 42
+```
 ## Development
 
 ### Prerequisites
