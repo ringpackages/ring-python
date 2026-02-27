@@ -78,7 +78,7 @@ class PythonTest
 		py_init()
 
 		? "=========================================="
-		? "   ring-python - Test Suite"
+		? "   Ring Python - Test Suite"
 		? "=========================================="
 		? ""
 
@@ -222,9 +222,9 @@ class PythonTest
 		assert(isString(cKwargs), "py_call() with kwargs should return string")
 		? "  json.dumps with kwargs: OK"
 
-		cJoin = py_call("os.path.join", ["/home", "user", "file.txt"])
-		assert(cJoin = "/home/user/file.txt", "py_call() os.path.join should return correct path")
-		? "  os.path.join: " + cJoin
+		nAbs = py_call("abs", [-42])
+		assert(nAbs = 42, "py_call('abs', [-42]) should return 42")
+		? "  abs(-42): " + nAbs
 		? ""
 
 	func testMethodCalls
