@@ -55,6 +55,7 @@ aPackageInfo = [
 		"src/rust_src/Cargo.toml",
 		"src/rust_src/.gitignore",
 		"src/rust_src/src/lib.rs",
+		"src/rust_src/build.rs",
 		"src/utils/uninstall.ring",
 		"src/utils/color.ring",
 		"src/utils/install.ring",
@@ -65,13 +66,19 @@ aPackageInfo = [
 	],
 	:windowsfiles = 	[
 		"lib/windows/amd64/ring_python.dll",
-		"lib/windows/i386/ring_python.dll"
+		"lib/windows/amd64/ring_python_impl.dll",
+		"lib/windows/i386/ring_python.dll",
+		"lib/windows/i386/ring_python_impl.dll"
 	],
 	:linuxfiles = 	[
 		"lib/linux/amd64/libring_python.so",
+		"lib/linux/amd64/libring_python_impl.so",
 		"lib/linux/arm64/libring_python.so",
+		"lib/linux/arm64/libring_python_impl.so",
 		"lib/linux/musl/amd64/libring_python.so",
-		"lib/linux/musl/arm64/libring_python.so"
+		"lib/linux/musl/amd64/libring_python_impl.so",
+		"lib/linux/musl/arm64/libring_python.so",
+		"lib/linux/musl/arm64/libring_python_impl.so"
 	],
 	:ubuntufiles = 	[
 
@@ -81,10 +88,13 @@ aPackageInfo = [
 	],
 	:macosfiles = 	[
 		"lib/macos/amd64/libring_python.dylib",
-		"lib/macos/arm64/libring_python.dylib"
+		"lib/macos/amd64/libring_python_impl.dylib",
+		"lib/macos/arm64/libring_python.dylib",
+		"lib/macos/arm64/libring_python_impl.dylib"
 	],
 	:freebsdfiles = 	[
-		"lib/freebsd/amd64/libring_python.so"
+		"lib/freebsd/amd64/libring_python.so",
+		"lib/freebsd/amd64/libring_python_impl.so"
 	],
 	:windowsringfolderfiles = 	[
 
