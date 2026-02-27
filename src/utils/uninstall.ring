@@ -12,11 +12,11 @@ load "src/utils/color.ring"
 # Constants
 # ============================================================================
 
-C_PRETTY_NAME      = "Python"
+C_PRETTY_NAME      = "Ring Python"
 C_PACKAGE_NAME     = "ring-python"
 C_NEW_PACKAGE_NAME = "python"
 C_LIB_NAME         = "ring_" + C_NEW_PACKAGE_NAME
-C_SAMPLES_DIR      = "Using" + C_PRETTY_NAME
+C_SAMPLES_DIR      = "Using" + capitalized(C_NEW_PACKAGE_NAME)
 
 # ============================================================================
 # Main Entry Point
