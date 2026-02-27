@@ -47,7 +47,7 @@ fn main() {
             ])
             .status();
         if status.is_err() || !status.unwrap().success() {
-            let status = std::process::Command::new("gcc")
+            let status = std::process::Command::new("cc")
                 .args([
                     "-shared", "-O2",
                     "-o", loader_dll.to_str().unwrap(),
@@ -62,7 +62,7 @@ fn main() {
         }
     } else if is_macos {
         let loader_dylib = base_dir.join("libring_python.dylib");
-        let status = std::process::Command::new("gcc")
+        let status = std::process::Command::new("cc")
             .args([
                 "-shared", "-fPIC", "-O2",
                 "-install_name", "@rpath/libring_python.dylib",
@@ -80,7 +80,7 @@ fn main() {
         // Linux, FreeBSD, etc.
         let loader_so = base_dir.join("libring_python.so");
         std::fs::create_dir_all(&base_dir).ok();
-        let status = std::process::Command::new("gcc")
+        let status = std::process::Command::new("cc")
             .args([
                 "-shared", "-fPIC", "-O2",
                 "-Wl,-soname,libring_python.so",
