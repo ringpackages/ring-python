@@ -26,7 +26,7 @@ empty = py_list([])
 # ---- Dicts ----
 ? ""
 ? "=== Dicts ==="
-mydict = py_dict([["name", "Ring"], ["version", "1.21"], ["year", 2016]])
+mydict = py_dict([["name", "Ring"], ["version", version()], ["year", 2016]])
 ? "Dict: " + py_str(mydict)
 ? "Type: " + py_type(mydict)
 ? "Len:  " + py_len(mydict)

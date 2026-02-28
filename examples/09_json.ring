@@ -10,7 +10,7 @@ py_exec("import json")
 
 # ---- Parsing JSON ----
 ? "=== Parse JSON ==="
-jsonstr = '{"name": "Ring", "version": 1.21, "features": ["OOP", "Functional", "Declarative"]}'
+jsonstr = '{"name": "Ring", "version": ' + version() + ', "features": ["OOP", "Functional", "Declarative"]}'
 
 py_set("raw", jsonstr)
 py_exec("parsed = json.loads(raw)")

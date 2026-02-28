@@ -392,7 +392,7 @@ class PythonTest
 	func testComplexScenarios
 		? "--- Complex Scenarios ---"
 
-		cJson = '{"name": "Ring", "version": 1.21}'
+		cJson = '{"name": "Ring", "version": ' + version() + '}'
 		py_set("jsonstr", cJson)
 		py_exec("import json; parsed = json.loads(jsonstr)")
 		aParsed = py_get("parsed")
